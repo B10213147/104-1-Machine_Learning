@@ -7,3 +7,11 @@
 	<cstdlib>
 	<cstring>
 
+1452018625 source:c:\cpp_porgramming\20160105backpropagation\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+
