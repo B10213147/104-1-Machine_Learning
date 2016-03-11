@@ -1,6 +1,7 @@
 /* Includes ------------------------------------------------------------------*/
-#include "opencv2/core/mat.hpp"
-#include "opencv2/core/utility.hpp"
+#include "cv.h"
+#include "highgui.h"
+#include "GraphUtils.h"
 #include <iostream>
 #include <fstream> 	//fstream, ofstream
 #include <cstdlib>	//atof
@@ -43,8 +44,11 @@ float activ_F(float x){
 float dactiv_F(float x){
     return 1 - pow(tanh(x), 2);
 }
+float target_function(float x){
+    return exp(-x) * sin(3*x) ;
+}
 float error_goal(void){
-    return 5 * pow(10, -4);
+    return pow(10, -3);
 }
 float learning_Rate(int k){
     const float u0 = 0.08;
@@ -162,7 +166,7 @@ int main()
         int i=0;
         for(float x=0; x<4.1; x+=0.2){
             Xin.col(i) = x;
-            Desire.col(i) = exp(-x) * sin(3*x);
+            Desire.col(i) = target_function(x);
             i++;
         }
         Xout1.row(0) = 1;
@@ -242,6 +246,20 @@ int main()
             output5<<endl;
         }
         output5.close();
+
+        float D[training_Times];
+        float out[training_Times];
+        for(int i=0; i < training_Times; i++){
+            D[i] = Desire.at<float>(i);
+            out[i] = Y.at<float>(i);
+        }
+        setGraphColor(0);
+        IplImage *graphImg = drawFloatGraph(D, training_Times, NULL,
+                            -1, 1, 480, 720,
+                            "Blue is desire, Green is testing output");
+        drawFloatGraph(out, training_Times, graphImg, -1, 1, 480, 720);
+        showImage(graphImg, 0, "Desire and Testing compare");
+        cvReleaseImage(&graphImg);
     }
 
     while(1){
@@ -306,7 +324,7 @@ int main()
             int i=0;
             for(float x=0; x<4.001; x+=0.01){
                 Xin.col(i) = x;
-                Desire.col(i) = exp(-x) * sin(3*x);
+                Desire.col(i) = target_function(x);
                 i++;
             }
 
@@ -335,6 +353,21 @@ int main()
                 for(int j=0; j<1; j++) output5<<Y.at<float>(j, i)<<endl;
             }
             output5.close();
+
+            float D[testing_Times];
+            float out[testing_Times];
+            for(int i=0; i < testing_Times; i++){
+                D[i] = Desire.at<float>(i);
+                out[i] = Y.at<float>(i);
+            }
+            setGraphColor(0);
+            IplImage *graphImg = drawFloatGraph(D, testing_Times, NULL,
+                                -1, 1, 360, 480,
+                                "Blue is desire, Green is testing output");
+            drawFloatGraph(out, testing_Times, graphImg, -1, 1, 360, 480);
+            cvSaveImage("1.jpg", graphImg);
+            showImage(graphImg, 0, "Desire and Testing compare");
+            cvReleaseImage(&graphImg);
         }
     }
     cout<<"=====End of Back Propagation====="<<endl;
