@@ -7,8 +7,8 @@
 #include <cstring>	//strncpy, strtok
 
 /* Private macro -------------------------------------------------------------*/
-#define Times 42
-#define Size 50
+#define Times 21
+#define Size 110
 #define Neurons 50
 #define Empty 0
 #define input_num 1
@@ -30,6 +30,7 @@ Mat Xout1(Neurons + 1,1,CV_32F);
 Mat W12_last(Neurons + 1,1,CV_32F);
 Mat W12(Neurons + 1,1,CV_32F);
 Mat W12_next(Neurons + 1,1,CV_32F);
+Mat e_sum(Neurons + 1,1,CV_32F);
 Mat V2(output_num,1,CV_32F);
 Mat Y(output_num,Times,CV_32F);
 Mat Desire(output_num,Times,CV_32F);
@@ -40,7 +41,7 @@ Mat E(output_num,Times,CV_32F);
 void modify_Buffer(float *A){
 	char temp[Size];
 
-	for(int i = 0; i < Neurons; i++){
+	for(int i = 0; i < Neurons+1; i++){
 		/*using strncpy convert string to char*/
 		strncpy(temp, Buffer[i].c_str(),sizeof(temp));
 		temp[sizeof(temp) - 1]= 0;
@@ -52,7 +53,7 @@ void modify_Buffer(float A[input_num+1][Neurons+1]){
 	char temp[Size];
 	char *delim = "\t";
 	char *pch;
-	for(int i = 0; i < Neurons; i++){
+	for(int i = 0; i < Neurons+1; i++){
 		//using strncpy convert string to char
 		strncpy(temp, Buffer[i].c_str(),sizeof(temp));
 		temp[sizeof(temp) - 1]= 0;
@@ -91,15 +92,15 @@ void open_file(void) {
 	file.close();
 }
 float activ_F(float x){
-    return tanh(x);
+    return 1/(1+exp(-x));
 }
 float dactiv_F(float x){
-    return 1 - pow(tanh(x), 2);
+    return activ_F(x)*(1-activ_F(x));
 }
 float learning_Rate(int k){
-    float u0 = 0.0002;
-    float k0 = 101;
-    float c = 0.02;
+    float u0 = 1.2;
+    float k0 = 250;
+    float c = 10;
     float temp = 0;
 
     temp = u0*(1 + (c/u0)*(k/k0))/
@@ -119,36 +120,46 @@ void compute_Xout1(int k){
     }
 }
 void compute_V2(int k){
+/*
+    V2.row(0) = 0;
     for(int i=0; i<Neurons+1; i++){
         V2.row(0) += Xout1.row(i) * W12.row(i);
     }
+*/
+    V2.row(0) = Xout1.t() * W12;
 }
 void compute_Y(int k){
+    //cout<<"V2="<<V2.at<float>(0)<<endl;
     Y.col(k) = activ_F(V2.at<float>(0));
 }
 void compute_Error(int k){
     float e = Desire.at<float>(0, k) - Y.at<float>(0, k);
     E.col(k) = 0.5 * pow(e, 2);
 }
-void training_W01(int k, float e_sum){
-    static float delta_last;
-    float delta = e_sum * dactiv_F(V1.at<float>(k));
+void training_W01(int k){
+    static float delta_last[Neurons+1];
+
 
     if(k>0){
-        for(int i=0; i<Neurons+1; i++){
+        for(int i=1; i<Neurons+1; i++){
+            //cout<<"V1="<<V1.at<float>(i)<<endl;
+            float delta = e_sum.at<float>(i) * dactiv_F(V1.at<float>(i));
             W01_next.row(i).col(1) = W01.row(i).col(1)+
             learning_Rate(k)*(delta*Xin.col(k)+
-                    0.25*delta_last*Xin.col(k-1));
+                    0.25*delta_last[i]*Xin.col(k-1));
             W01_next.row(i).col(0) = W01.row(i).col(0)+
-            learning_Rate(k)*(delta*1+0.25*delta_last*1);
+            learning_Rate(k)*(delta*1+0.25*delta_last[i]*1);
+            delta_last[i] = delta;
         }
     }
     else{
-        for(int i=0; i<Neurons+1; i++){
+        for(int i=1; i<Neurons+1; i++){
+            float delta = e_sum.at<float>(i) * dactiv_F(V1.at<float>(i));
             W01_next.row(i).col(1) = W01.row(i).col(1)+
             learning_Rate(k)*delta*Xin.col(k);
             W01_next.row(i).col(0) = W01.row(i).col(0)+
             learning_Rate(k)*delta*1;
+            delta_last[i] = delta;
         }
     }
 /*
@@ -169,18 +180,16 @@ void training_W01(int k, float e_sum){
         }
     }
 */
-    delta_last = delta;
 }
-float training_W12(int k){
+void training_W12(int k){
     static float delta_last;
 
     float e = Desire.at<float>(0,k) - Y.at<float>(0,k);
 
     float delta = e * dactiv_F(V2.at<float>(0,0));
 
-    float e_sum = 0;
     for(int i=1; i<Neurons+1; i++){
-        e_sum += delta*W12.at<float>(i,0);
+        e_sum.row(i) = delta*W12.at<float>(i,0);
     }
     //cout<<"check1"<<endl;
 
@@ -212,7 +221,6 @@ float training_W12(int k){
     }
 */
     delta_last = delta;
-    return e_sum;
 }
 
 /* Private define ------------------------------------------------------------*/
@@ -223,7 +231,8 @@ float Temp2[Times];
 /* Main function -------------------------------------------------------------*/
 int main()
 {
-    int k=0;
+    int k_total=0;
+    bool flag=1;
 
     cout<<"Enter hidden layer's weight file:";
     open_file();
@@ -244,12 +253,16 @@ int main()
     int i=0;
     for(float j=0; j<=4; j+=0.2){
         Xin.col(i) = j;
-        Xin.col(i+21) = j;
+        //n.col(i+21) = j;
+       //in.col(i+42) = j;
+       //Xn.col(i+63) = j;
+        //Xin.col(i+84) = j;
         i++;
     }
     Xout1.row(0) = 1;
     //cout<<"check0"<<endl;
-    while(k < Times){
+    do{
+        for(int k=0; k<Times; k++){
         compute_V1(k);
         //cout<<"check1"<<endl;
         compute_Xout1(k);
@@ -260,16 +273,28 @@ int main()
         //cout<<"check4"<<endl;
         compute_Error(k);
         //cout<<"check5"<<endl;
-        float e_sum = training_W12(k);
-        //cout<<"check1"<<endl;
-        training_W01(k, e_sum);
+        training_W12(k);
+        //cout<<"e_sum="<<e_sum<<endl;
+        training_W01(k);
         //cout<<"check2"<<endl;
-        k++;
+
 
         W01_last = W01; W01 = W01_next;
         W12_last = W12; W12 = W12_next;
-    }
-    cout<<"k="<<k<<endl;
+
+        k_total++;
+
+
+        }
+        for(int i=0; i<Times; i++){
+            if(E.at<float>(i)>pow(10,-4)){
+            flag = 1;
+            break;
+            }
+            else flag = 0;
+        }
+    }while(flag==1 && k_total<5000);
+    cout<<"k_total="<<k_total<<endl;
     cout<<"training end"<<endl;
 
     ofstream output("W01_training.txt", ios::out);
@@ -278,7 +303,7 @@ int main()
 		output<<endl;
 	}
 	output.close();
-	delete output;
+	//delete output;
 
 	ofstream output1("W01_last_training.txt", ios::out);
     for(int i=0; i<Neurons+1; i++){
@@ -286,7 +311,7 @@ int main()
 		output1<<endl;
 	}
 	output1.close();
-
+cout<<"W12="<<endl<<W12<<endl;
 	ofstream output2("W12_last_training.txt", ios::out);
     for(int i=0; i<Neurons+1; i++){
 		for(int j=0; j<1; j++) output2<<W12_last.at<float>(i,j)<<"\t";
