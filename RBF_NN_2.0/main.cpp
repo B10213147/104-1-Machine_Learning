@@ -1,6 +1,7 @@
 /* Includes ------------------------------------------------------------------*/
-#include "opencv2/core/mat.hpp"
-#include "opencv2/core/utility.hpp"
+#include "cv.h"
+#include "highgui.h"
+#include "GraphUtils.h"
 #include <iostream>
 #include <fstream> 	//fstream, ofstream
 #include <cstdlib>	//atof
@@ -48,8 +49,11 @@ void initial_Spread(void){
     float dmax = max - min;
     Spread = dmax / sqrt(Neurons);
 }
+float target_function(float x){
+    return sin(-3*x);
+}
 float error_goal(void){
-    return 2*pow(10, -4);
+    return 5*pow(10, -4);
 }
 float learning_Rate(int k){
     const float u0 = 0.20;
@@ -132,7 +136,7 @@ int main()
         int i=0;
         for(float x=0; x<4.1; x+=0.2){
             Xin.col(i) = x;
-            Desire.col(i) = exp(-x) * sin(3*x);
+            Desire.col(i) = target_function(x);
             Center.row(i+1) = x;
             i++;
         }
@@ -215,6 +219,20 @@ int main()
             for(int j=0; j<1; j++) output5<<Y.at<float>(j, i)<<endl;
         }
         output5.close();
+
+        float D[training_Times];
+        float out[training_Times];
+        for(int i=0; i < training_Times; i++){
+            D[i] = Desire.at<float>(i);
+            out[i] = Y.at<float>(i);
+        }
+        setGraphColor(0);
+        IplImage *graphImg = drawFloatGraph(D, training_Times, NULL,
+                            -1, 1, 360, 480,
+                            "Blue is desire, Green is testing output");
+        drawFloatGraph(out, training_Times, graphImg, -1, 1, 360, 480);
+        showImage(graphImg, 0, "Desire and Testing compare");
+        cvReleaseImage(&graphImg);
     }
 
     while(1){
@@ -294,7 +312,7 @@ int main()
             int i=0;
             for(float x=0; x<4.001; x+=0.01){
                 Xin.col(i) = x;
-                Desire.col(i) = exp(-x) * sin(3*x);
+                Desire.col(i) = target_function(x);
                 i++;
             }
 
@@ -319,6 +337,21 @@ int main()
                 for(int j=0; j<1; j++) output5<<Y.at<float>(j, i)<<endl;
             }
             output5.close();
+
+            float D[testing_Times];
+            float out[testing_Times];
+            for(int i=0; i < testing_Times; i++){
+                D[i] = Desire.at<float>(i);
+                out[i] = Y.at<float>(i);
+            }
+            setGraphColor(0);
+            IplImage *graphImg = drawFloatGraph(D, testing_Times, NULL,
+                                -1, 1, 360, 480,
+                                "Blue is desire, Green is testing output");
+            drawFloatGraph(out, testing_Times, graphImg, -1, 1, 360, 480);
+            cvSaveImage("2.jpg", graphImg);
+            showImage(graphImg, 0, "Desire and Testing compare");
+            cvReleaseImage(&graphImg);
         }
     }
     cout<<"=====End of Radial Basis Function Neuron Networks====="<<endl;
