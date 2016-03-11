@@ -15,3 +15,27 @@
 	<cstdlib>
 	<cstring>
 
+1452107109 source:c:\cpp_porgramming\20160106backpropagation\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+
+1452580916 source:c:\cpp_porgramming\20160107backpropagation\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+
+1452581238 source:i:\20160107backpropagation\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+
