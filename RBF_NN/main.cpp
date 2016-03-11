@@ -135,6 +135,30 @@ int main()
             Center = Center_next;
             Spread = Spread_next;
         }
+
+        float e_max = 0;
+        int n = 0;
+        for(int i=0; i<Times; i++){
+            float temp = E.at<float>(0,i);
+            if(temp > error_goal()){
+                if(temp > e_max){
+                    e_max = temp;
+                    flag =1;
+                }
+                else flag = 1;
+            }
+            else{
+                n++;
+                if(n==Times - 1){
+                    flag = 0;
+                    break;
+                }
+            }
+        }
+        if(k_total % 25 == 0){
+            system("CLS");
+            cout<<"Remain:"<<(e_max-error_goal())/error_goal()<<endl;
+        }
         k_total++;
     }while(flag==1 && k_total<5000);
     cout<<"k_total="<<k_total<<endl;
