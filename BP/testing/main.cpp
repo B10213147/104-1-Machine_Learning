@@ -21,21 +21,13 @@ using namespace std;
 /* Private variables ---------------------------------------------------------*/
 static string Buffer[Size];
 Mat Xin(input_num,Times,CV_32F);
-Mat W01_last(Neurons+1,input_num + 1,CV_32F);
 Mat W01(Neurons+1,input_num + 1,CV_32F);
-Mat W01_next(Neurons+1,input_num + 1,CV_32F);
 Mat V1(Neurons + 1,1,CV_32F);
-Mat Xout1_last(Neurons + 1,1,CV_32F);
 Mat Xout1(Neurons + 1,1,CV_32F);
-Mat W12_last(Neurons + 1,1,CV_32F);
 Mat W12(Neurons + 1,1,CV_32F);
-Mat W12_next(Neurons + 1,1,CV_32F);
-Mat e_sum(Neurons + 1,1,CV_32F);
-Mat V2(output_num,1,CV_32F);
 Mat Y(output_num,Times,CV_32F);
 Mat Desire(output_num,Times,CV_32F);
 Mat E(output_num,Times,CV_32F);
-
 
 /* Private functions ---------------------------------------------------------*/
 void modify_Buffer(float *A){
@@ -67,7 +59,6 @@ void modify_Buffer(float A[input_num+1][Neurons+1]){
 		}
 	}
 }
-
 void open_file(void) {
 	fstream file;
 	char fname[Size];
@@ -92,15 +83,13 @@ void open_file(void) {
 	file.close();
 }
 float activ_F(float x){
-    return 1/(1+exp(-x));
+    return tanh(x);
 }
 void compute_V1(int k){
     for(int i=1; i<Neurons+1; i++){
         V1.row(i) = Xin.col(k) * W01.row(i).col(1) +
                     W01.row(i).col(0);
     }
-    //cout<<"V1="<<V1<<endl;
-    //system("pause");
 }
 void compute_Xout1(int k){
     //Xout1_last = Xout1;
@@ -108,21 +97,8 @@ void compute_Xout1(int k){
         Xout1.row(i) = activ_F(V1.at<float>(i));
     }
 }
-void compute_V2(int k){
-/*
-    V2.row(0) = 0;
-    for(int i=0; i<Neurons+1; i++){
-        V2.row(0) += Xout1.row(i) * W12.row(i);
-    }
-    cout<<"V2(1)="<<V2.row(0)<<endl;
-*/
-    V2.row(0) = Xout1.t() * W12;
-    //cout<<"V2(2)="<<V2.row(0)<<endl;
-    //system("pause");
-}
 void compute_Y(int k){
-    //cout<<"V2="<<V2.at<float>(0)<<endl;
-    Y.col(k) = activ_F(V2.at<float>(0));
+    Y.col(k) = Xout1.t() * W12;
 }
 void compute_Error(int k){
     float e = Desire.at<float>(0, k) - Y.at<float>(0, k);
@@ -137,9 +113,6 @@ float Temp2[Times];
 /* Main function -------------------------------------------------------------*/
 int main()
 {
-    int k=0;
-    bool flag=1;
-
     cout<<"Enter hidden layer's weight file:";
     open_file();
     modify_Buffer(Temp0);
@@ -149,43 +122,33 @@ int main()
     open_file();
     modify_Buffer(Temp1);
     W = Mat(1,Neurons+1,CV_32F,Temp1).clone();
-
     W12 = W.t();
-/*
     cout<<"Enter desire file:";
     open_file();
     modify_Buffer(Temp2);
     Desire = Mat(output_num,Times,CV_32F,Temp2).clone();
-*/
+
+    int k=0;
     int i=0;
-    for(float j=0; j<=4; j+=0.01){
+    for(float j=0; j<4.005; j+=0.01){
         Xin.col(i) = j;
-        //n.col(i+21) = j;
-       //in.col(i+42) = j;
-       //Xn.col(i+63) = j;
-        //Xin.col(i+84) = j;
         i++;
     }
     Xout1.row(0) = 1;
-    //cout<<"check0"<<endl;
-    do{
 
+    do{
         compute_V1(k);
-        //cout<<"check1"<<endl;
+
         compute_Xout1(k);
-        //cout<<"check2"<<endl;
-        compute_V2(k);
-        //cout<<"check3"<<endl;
+
         compute_Y(k);
-        //cout<<"check4"<<endl;
-        //compute_Error(k);
-        //cout<<"check5"<<endl;
+
+        compute_Error(k);
 
         k++;
     }while(k<Times);
     cout<<"k="<<k<<endl;
     cout<<"testing end"<<endl;
-
 
 	ofstream output4("Error.txt", ios::out);
     for(int i=0; i<Times; i++){
@@ -196,7 +159,7 @@ int main()
 
 	ofstream output5("Y.txt", ios::out);
     for(int i=0; i<Times; i++){
-		for(int j=0; j<1; j++) output5<<Y.t().row(i).col(j)<<"\t";
+		for(int j=0; j<1; j++) output5<<Y.at<float>(j,i)<<"\t";
 		output5<<endl;
 	}
 	output5.close();
