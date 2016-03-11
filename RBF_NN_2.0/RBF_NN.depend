@@ -1,0 +1,50 @@
+# depslib dependency file v1.0
+1452369348 source:c:\cpp_porgramming\20160109rbf_nn\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+	<ctime>
+
+1452586723 source:c:\cpp_porgramming\20160112rbf_nn\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	"GraphUtils.h"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+	<ctime>
+
+1275410424 c:\cpp_porgramming\20160112rbf_nn\graphutils.h
+
+1452578470 source:c:\cpp_porgramming\20160112rbf_nn\graphutils.cpp
+	<iostream>
+	<tchar.h>
+	<cv.h>
+	<cxcore.h>
+	<highgui.h>
+	"GraphUtils.h"
+
+1452578470 source:d:\cpp_porgramming\20160112rbf_nn\graphutils.cpp
+	<iostream>
+	<tchar.h>
+	<cv.h>
+	<cxcore.h>
+	<highgui.h>
+	"GraphUtils.h"
+
+1275410424 d:\cpp_porgramming\20160112rbf_nn\graphutils.h
+
+1452860362 source:d:\cpp_porgramming\20160112rbf_nn\main.cpp
+	"cv.h"
+	"highgui.h"
+	"GraphUtils.h"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+	<ctime>
+

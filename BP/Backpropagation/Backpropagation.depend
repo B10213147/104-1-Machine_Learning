@@ -1,0 +1,30 @@
+# depslib dependency file v1.0
+1452412671 source:c:\cpp_porgramming\20160110backpropagation\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+	<ctime>
+
+1452582573 source:c:\cpp_porgramming\20160112backpropagation\graphutils.cpp
+	<stdio.h>
+	<iostream>
+	<cv.h>
+	<cxcore.h>
+	<highgui.h>
+	"GraphUtils.h"
+
+1275410424 c:\cpp_porgramming\20160112backpropagation\graphutils.h
+
+1452859772 source:c:\cpp_porgramming\20160112backpropagation\main.cpp
+	"cv.h"
+	"highgui.h"
+	"GraphUtils.h"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+	<ctime>
+
