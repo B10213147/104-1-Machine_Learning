@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1452412671 source:c:\cpp_porgramming\20160110backpropagation\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+	<ctime>
+
