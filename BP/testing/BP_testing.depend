@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1452135198 source:c:\cpp_porgramming\20160106bp_testing\main.cpp
+	"opencv2/core/mat.hpp"
+	"opencv2/core/utility.hpp"
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<cstring>
+
